@@ -1,19 +1,64 @@
-name: 'Hello World'
-description: 'Greet someone here and now'
+name: .NET Core
+description: 'Build and Deploy a .Net Application to Azure with GPR dependencies'
 inputs:
-  who-to-greet:  # id of input
-    description: 'Who to greet'
+  csproj-name: # project file name
+    description: 'Project file name'
     required: true
-    default: 'World'
-outputs:
-  random-number: 
-    description: "Random number"
-    value: ${{ steps.random-number-generator.outputs.random-id }}
+  csproj-dir: # directory path for project file
+    description: 'Project directory path'
+    required: true
+  csproj-build: # release build type
+    description: 'Build of solution to publish'
+    required: false
+    default: 'Release'
+  github-url: # github url
+    description: 'Github URL'
+    required: true
+  github-user: # github read user
+    description: 'Github read user'
+    required: true
+  github-user-key: # github read user key
+    description: 'Github read user key'
+    required: true
+  azure-pub-profile: # azure publish profile
+    description: 'Azure publish profile'
+    required: true
+  azure-app-name: # azure app service name
+    description: 'Azure app service name'
+    required: true
+  azure-app-slot: # azure app service slot name
+    description: 'Azure app service slot name'
+    required: false
+    
 runs:
   using: "composite"
-  steps: 
-    - run: echo Hello ${{ inputs.who-to-greet }}.
+  runs-on: ubuntu-latest
+  steps:
+    - name: Setup .NET Core @ Latest
+      uses: actions/setup-dotnet@v1
+        
+    - name: Build ${{ inputs.csproj-name }}
+      working-directory: ${{ inputs.csproj-dir }}
+      run: |
+        dotnet nuget add source ${{ inputs.github-url }} -n github -u ${{ inputs.github-user }} -p ${{ inputs.github-user-key }} --store-password-in-clear-text
+        dotnet publish -c ${{ inputs.csproj-build }} -o out
       shell: bash
-    - id: random-number-generator
-      run: echo "::set-output name=random-id::$(echo $RANDOM)"
-      shell: bash
+        
+    - name: Publish To Azure Slot
+      uses: Azure/webapps-deploy@v2
+      if: ${{ inputs.azure-app-slot }} == ${{ null }}
+      with:
+        app-name: ${{ inputs.azure-app-name }}
+        publish-profile: ${{ inputs.azure-pub-profile }}
+        slot-name: ${{ inputs.azure-app-slot }}
+        package: ./${{ inputs.csproj-dir }}/out
+        
+    - name: Publish To Azure
+      uses: Azure/webapps-deploy@v2
+      if: ${{ inputs.azure-app-slot }} != ${{ null }}
+      with:
+        app-name: ${{ inputs.azure-app-name }}
+        publish-profile: ${{ inputs.azure-pub-profile }}
+        slot-name: ${{ inputs.azure-app-slot }}
+        package: ./${{ inputs.csproj-dir }}/out
+      
