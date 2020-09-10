@@ -33,8 +33,9 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup .NET Core @ Latest
-      uses: actions/setup-dotnet@v1
+   # THE STEPS BELOW THAT ARE COMMENTED OUT NEED TO BE CONVERTED TO BASH SCRIPTS OR MOST LIKELY JAVASRIPT IN ORDER TO WORK PROPERLY AS A COMPOSITE ACTION
+   # - name: Setup .NET Core @ Latest
+   #   uses: actions/setup-dotnet@v1
         
     - name: Build ${{ inputs.csproj-name }}
       working-directory: ${{ inputs.csproj-dir }}
@@ -43,21 +44,20 @@ runs:
         dotnet publish -c ${{ inputs.csproj-build }} -o out
       shell: bash
         
-    - name: Publish To Azure Slot
-      uses: Azure/webapps-deploy@v2
-      if: ${{ inputs.azure-app-slot }} == ${{ null }}
-      with:
-        app-name: ${{ inputs.azure-app-name }}
-        publish-profile: ${{ inputs.azure-pub-profile }}
-        slot-name: ${{ inputs.azure-app-slot }}
-        package: ./${{ inputs.csproj-dir }}/out
+   # - name: Publish To Azure Slot
+   #   uses: Azure/webapps-deploy@v2
+   #   if: ${{ inputs.azure-app-slot }} == ${{ null }}
+   #   with:
+   #     app-name: ${{ inputs.azure-app-name }}
+   #     publish-profile: ${{ inputs.azure-pub-profile }}
+   #     slot-name: ${{ inputs.azure-app-slot }}
+   #     package: ./${{ inputs.csproj-dir }}/out
         
-    - name: Publish To Azure
-      uses: Azure/webapps-deploy@v2
-      if: ${{ inputs.azure-app-slot }} != ${{ null }}
-      with:
-        app-name: ${{ inputs.azure-app-name }}
-        publish-profile: ${{ inputs.azure-pub-profile }}
-        slot-name: ${{ inputs.azure-app-slot }}
-        package: ./${{ inputs.csproj-dir }}/out
-      
+   # - name: Publish To Azure
+   #   uses: Azure/webapps-deploy@v2
+   #   if: ${{ inputs.azure-app-slot }} != ${{ null }}
+   #   with:
+   #     app-name: ${{ inputs.azure-app-name }}
+   #     publish-profile: ${{ inputs.azure-pub-profile }}
+   #     slot-name: ${{ inputs.azure-app-slot }}
+   #     package: ./${{ inputs.csproj-dir }}/out
