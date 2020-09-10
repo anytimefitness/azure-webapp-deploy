@@ -1,1 +1,1 @@
-azure-webapp-deploy
+Public action to build and deploy a .Net application to Azure
